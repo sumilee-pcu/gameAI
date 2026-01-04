@@ -1,9 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Boid 군집 관리자
-/// </summary>
+// Boid 군집 관리 및 이웃 탐색
 public class FlockManager : MonoBehaviour
 {
     [Header("Flock Settings")]
@@ -18,18 +16,11 @@ public class FlockManager : MonoBehaviour
 
     void Start()
     {
-        SpawnBoids();
-    }
-
-    /// <summary>
-    /// Boid 생성
-    /// </summary>
-    void SpawnBoids()
-    {
+        // Boid 생성
         for (int i = 0; i < boidCount; i++)
         {
             Vector3 randomPos = flockCenter + Random.insideUnitSphere * flockRadius;
-            randomPos.y = 1f; // 높이 고정
+            randomPos.y = 1f;
 
             GameObject boidObj = Instantiate(boidPrefab, randomPos, Quaternion.identity);
             boidObj.name = $"Boid_{i}";
@@ -37,31 +28,21 @@ public class FlockManager : MonoBehaviour
 
             Boid boid = boidObj.GetComponent<Boid>();
             if (boid != null)
-            {
                 boids.Add(boid);
-            }
         }
 
         Debug.Log($"{boidCount}개의 Boid 생성 완료");
     }
 
-    /// <summary>
-    /// 주변 Boid 탐색
-    /// </summary>
+    // 인식 범위 내 이웃 탐색 (O(n) 거리 검사)
     public Boid[] GetNeighbors(Boid boid, float radius)
     {
         List<Boid> neighbors = new List<Boid>();
 
         foreach (Boid other in boids)
         {
-            if (other == boid) continue;
-
-            float distance = Vector3.Distance(boid.Position, other.Position);
-
-            if (distance < radius)
-            {
+            if (other != boid && Vector3.Distance(boid.Position, other.Position) < radius)
                 neighbors.Add(other);
-            }
         }
 
         return neighbors.ToArray();
@@ -69,7 +50,6 @@ public class FlockManager : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        // 군집 영역 표시
         Gizmos.color = new Color(0, 1, 1, 0.3f);
         Gizmos.DrawWireSphere(flockCenter, flockRadius);
     }

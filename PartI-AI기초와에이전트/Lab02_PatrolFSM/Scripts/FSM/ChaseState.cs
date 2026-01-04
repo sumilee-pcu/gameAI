@@ -1,13 +1,11 @@
 using UnityEngine;
 
-/// <summary>
-/// 추적 상태
-/// </summary>
 public class ChaseState : State
 {
     private Transform target;
     private float moveSpeed;
-    private float chaseSpeedMultiplier = 1.5f; // 추적 시 더 빠르게
+    private const float CHASE_SPEED_MULT = 1.5f;
+    private const float ROTATION_SPEED = 10f;
 
     public ChaseState(GameObject agent, Transform target, float moveSpeed)
         : base(agent, "Chase")
@@ -27,25 +25,17 @@ public class ChaseState : State
         if (target == null) return;
 
         Vector3 direction = (target.position - agent.transform.position).normalized;
+        agent.transform.position += direction * moveSpeed * CHASE_SPEED_MULT * Time.deltaTime;
 
-        // 빠른 속도로 이동
-        agent.transform.position += direction * moveSpeed * chaseSpeedMultiplier * Time.deltaTime;
-
-        // 목표를 향해 회전
         if (direction != Vector3.zero)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            agent.transform.rotation = Quaternion.Slerp(
-                agent.transform.rotation,
-                targetRotation,
-                10f * Time.deltaTime
-            );
+            Quaternion targetRot = Quaternion.LookRotation(direction);
+            agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, targetRot, ROTATION_SPEED * Time.deltaTime);
         }
     }
 
     public override void OnDrawGizmos()
     {
-        // 추적선 시각화
         if (target != null)
         {
             Gizmos.color = Color.red;
